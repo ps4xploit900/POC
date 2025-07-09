@@ -162,12 +162,24 @@ window.addEventListener("load", () => {
       if (elapsed > 4) {
         let count = parseInt(localStorage.getItem("crashCount") || "0");
         count++;
-        alert(`Last run may have triggered instability or crash ⚠️\nFreeze duration: ${elapsed}s\nTotal crashes detected: ${count}`);
+
+        // Detect PS4 firmware version from user agent
+        const userAgent = navigator.userAgent;
+        const match = userAgent.match(/PlayStation 4\/([\d.]+)/);
+        const firmware = match ? `Firmware: ${match[1]}\n` : "";
+
+        alert(
+          `${firmware}` +
+          `Last run may have triggered instability or crash ⚠️\n` +
+          `Freeze duration: ${elapsed}s\n` +
+          `Total crashes detected: ${count}`
+        );
+
         localStorage.setItem("crashCount", count.toString());
         localStorage.removeItem("crashTime");
       }
     }
-  }, 1000); // wait 1 second after returning from crash
+  }, 1000); // wait 1s after returning from crash
 });
 
 function runPoC() {
@@ -201,7 +213,7 @@ function runPoC() {
     }).catch(err => {
       document.getElementById("message").textContent = "Error: " + err.message;
     });
-  }, 500); // ensure localStorage is written before fullscreen
+  }, 500); // ensure localStorage writes before fullscreen
 }
 </script>
 
