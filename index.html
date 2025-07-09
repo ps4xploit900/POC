@@ -153,37 +153,32 @@ body {
 </div>
 <script>
 window.onload = () => {
-  requestAnimationFrame(() => {
-    const pending = localStorage.getItem("crashPending");
-    const startTime = parseInt(localStorage.getItem("crashStartTime") || "0");
-    const now = Date.now();
-    const elapsed = Math.floor((now - startTime) / 1000);
+  const startTime = parseInt(localStorage.getItem("crashStartTime") || "0");
+  const pending = localStorage.getItem("crashPending");
+  const now = Date.now();
+  const elapsed = now - startTime;
 
-    // Mostrar solo si estaba pendiente Y han pasado al menos 6 segundos (pero no más de 5 min)
-    if (pending === "1" && elapsed >= 6 && elapsed < 300) {
-      let count = parseInt(localStorage.getItem("crashCount") || "0");
-      count++;
-      localStorage.setItem("crashCount", count.toString());
+  if (pending === "yes" && elapsed > 5000) {
+    let count = parseInt(localStorage.getItem("crashCount") || "0");
+    count++;
+    localStorage.setItem("crashCount", count.toString());
 
-      alert(
-        `⚠️ Last run may have triggered instability or crash.\n` +
-        `⏱ Elapsed: ${elapsed}s\n` +
-        `💥 Total crashes detected: ${count}`
-      );
-    }
+    alert(
+      `⚠️ Last run may have triggered instability or crash.\n` +
+      `⏱ Elapsed: ${Math.floor(elapsed / 1000)}s\n` +
+      `💥 Total crashes detected: ${count}`
+    );
+  }
 
-    // Limpieza
-    localStorage.removeItem("crashPending");
-    localStorage.removeItem("crashStartTime");
-  });
+  localStorage.removeItem("crashPending");
+  localStorage.removeItem("crashStartTime");
 };
 
 function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
-  // Guardar datos de posible crash
-  localStorage.setItem("crashPending", "1");
+  localStorage.setItem("crashPending", "yes");
   localStorage.setItem("crashStartTime", Date.now().toString());
 
   setTimeout(() => {
@@ -216,6 +211,7 @@ function runPoC() {
   }, 500);
 }
 </script>
+
 
 
 
