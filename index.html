@@ -151,7 +151,6 @@ body {
     </svg>
   </div>
 </div>
-
 <script>
 window.onload = () => {
   const crashed = localStorage.getItem("wasAboutToCrash");
@@ -161,7 +160,7 @@ window.onload = () => {
     const now = Date.now();
     const elapsed = Math.floor((now - Number(timestamp)) / 1000);
 
-    if (elapsed >= 7) {
+    if (elapsed > 5) { // asegura que sea después del crash real
       let count = parseInt(localStorage.getItem("crashCount") || "0");
       count++;
       localStorage.setItem("crashCount", count.toString());
@@ -169,10 +168,10 @@ window.onload = () => {
       setTimeout(() => {
         alert(
           `⚠️ Last run may have triggered instability or crash.\n` +
-          `⏱ Elapsed: ${elapsed}s\n` +
+          `⏱ Elapsed since crash: ${elapsed}s\n` +
           `💥 Total crashes detected: ${count}`
         );
-      }, 100);
+      }, 200);
     }
 
     localStorage.removeItem("wasAboutToCrash");
@@ -188,7 +187,7 @@ function runPoC() {
   localStorage.setItem("wasAboutToCrash", "yes");
   localStorage.setItem("crashTimestamp", Date.now().toString());
 
-  // AÑADIDO: Esperar 500ms para asegurarnos que localStorage se guarda antes de entrar a fullscreen
+  // Delay para asegurar persistencia
   setTimeout(() => {
     document.body.requestFullscreen().then(() => {
       const PATTERN = 0x43434343;
