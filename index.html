@@ -1,3 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🎮​PS4 POC "WebKit" ☠️👻</title>
+<style>
+:root {
+  --sqrt3: 1.7320508075688772;
+  --edge-size: 100px;
+  --hex-width: calc(var(--edge-size) * 2);
+  --hex-height: calc(var(--sqrt3) * var(--edge-size));
+  --border-hover: 15px;
+  --soft-yellow: rgba(255, 255, 0, 1);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+body {
+  background: black;
+  margin: 0;
+  overflow: hidden;
+  color: #0f0;
+  font-family: monospace;
+}
+#systemMonitorButton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -50%, 0) rotate(30deg);
+  cursor: pointer;
+  width: var(--hex-width);
+  height: var(--hex-height);
+  z-index: 10;
+}
+#systemMonitorButton:hover .hex:last-child {
+  opacity: 1;
+  transform: scale(1.3);
+}
+#systemMonitorButton:hover .hex:first-child {
+  opacity: 1;
+  transform: scale(1.2);
+}
+#systemMonitorButton:hover .hex:first-child div:before,
+#systemMonitorButton:hover .hex:first-child div:after {
+  height: var(--border-hover);
+}
+.hex {
+  position: absolute;
+  top: 0;
+  left: calc(var(--edge-size) / 2);
+  width: var(--edge-size);
+  height: var(--hex-height);
+  opacity: 0.5;
+  background: none;
+}
+.hex:first-child {
+  transform: scale(0.9);
+  transition: all 0.3s var(--ease-out-quart);
+  z-index: 0;
+}
+.hex:last-child {
+  transition: all 0.3s var(--ease-out-expo);
+  z-index: 1;
+}
+.hex div {
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  width: var(--edge-size);
+  height: var(--hex-height);
+}
+.hex div:before,
+.hex div:after {
+  content: ' ';
+  position: absolute;
+  background: var(--soft-yellow);
+  width: 100%;
+  height: 1px;
+  transition: height 0.3s var(--ease-out-quart);
+}
+.hex div:before { top: 0; }
+.hex div:after { bottom: 0; }
+.hex div:nth-child(1) { transform: rotate(0deg); }
+.hex div:nth-child(2) { transform: rotate(60deg); }
+.hex div:nth-child(3) { transform: rotate(120deg); }
+.hex div { transform-origin: center center; }
+
+#go-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #0f0;
+  font-size: 22px;
+  font-family: monospace;
+  pointer-events: none;
+  z-index: 20;
+}
+
+#message {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #0f0;
+  font-family: monospace;
+  font-size: 18px;
+  text-align: center;
+  z-index: 20;
+  white-space: pre;
+}
+
+#popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 270%;
+  max-width: 800px;
+  background: white;
+  color: black;
+  border: 4px solid black;
+  border-radius: 20px;
+  padding: 40px 30px;
+  font-family: monospace;
+  font-size: 50px;
+  text-align: center;
+  z-index: 9999;
+  box-shadow: 0 0 30px rgba(0,0,0,0.7);
+  display: none;
+}
+</style>
+</head>
+<body>
+<div id="systemMonitorButton" onclick="runPoC()">
+  <div class="hex"><div></div><div></div><div></div></div>
+  <div class="hex"><div></div><div></div><div></div></div>
+</div>
+
+<span id="go-text">GO!</span>
+
+<div id="message">Click to launch the PoC</div>
+
+<div id="popup">
+  <div style="font-family: monospace; font-size: 50px; text-align: center;">
+    Press the OPTIONS button<br>
+    and refresh the page 
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#007BFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-left: 6px;">
+      <polyline points="1 4 1 10 7 10" />
+      <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+    </svg>
+  </div>
+</div>
+
 <script>
 window.onload = () => {
   const crashed = localStorage.getItem("wasAboutToCrash");
@@ -65,3 +219,8 @@ function runPoC() {
   }, 500);
 }
 </script>
+
+
+
+</body>
+</html>
