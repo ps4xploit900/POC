@@ -167,7 +167,7 @@ window.addEventListener("load", () => {
         localStorage.removeItem("crashTime");
       }
     }
-  }, 1000); // esperar 1 segundo tras volver del crash
+  }, 1000); // wait 1 second after returning from crash
 });
 
 function runPoC() {
@@ -201,8 +201,9 @@ function runPoC() {
     }).catch(err => {
       document.getElementById("message").textContent = "Error: " + err.message;
     });
-  }, 500); // asegurar que localStorage se escribe antes del fullscreen
+  }, 500); // ensure localStorage is written before fullscreen
 }
 </script>
+
 </body>
 </html>
