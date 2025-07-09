@@ -154,27 +154,29 @@ body {
 
 <script>
 window.onload = () => {
-  const lastCrash = localStorage.getItem("wasAboutToCrash");
-  const lastTimestamp = localStorage.getItem("crashTimestamp");
+  const crashed = localStorage.getItem("wasAboutToCrash");
+  const timestamp = localStorage.getItem("crashTimestamp");
 
-  if (lastCrash === "yes" && lastTimestamp) {
+  if (crashed === "yes" && timestamp) {
     const now = Date.now();
-    const elapsed = Math.floor((now - Number(lastTimestamp)) / 1000);
+    const elapsed = Math.floor((now - Number(timestamp)) / 1000);
 
-    // Solo mostrar si han pasado más de 5 segundos (asumimos crash)
-    if (elapsed >= 5) {
+    // ⚠️ SOLO mostrar si han pasado al menos 7 segundos (para evitar alert inmediatos)
+    if (elapsed >= 7) {
       let count = parseInt(localStorage.getItem("crashCount") || "0");
       count++;
       localStorage.setItem("crashCount", count.toString());
 
-      alert(
-        `⚠️ Last run may have triggered instability or crash.\n` +
-        `⏱ Elapsed: ${elapsed}s\n` +
-        `💥 Total crashes detected: ${count}`
-      );
+      setTimeout(() => {
+        alert(
+          `⚠️ Last run may have triggered instability or crash.\n` +
+          `⏱ Elapsed: ${elapsed}s\n` +
+          `💥 Total crashes detected: ${count}`
+        );
+      }, 100); // Mostrar apenas regrese visualmente al navegador
     }
 
-    // Reset flags
+    // Limpiar flags
     localStorage.removeItem("wasAboutToCrash");
     localStorage.removeItem("crashTimestamp");
   }
@@ -215,6 +217,7 @@ function runPoC() {
   });
 }
 </script>
+
 
 </body>
 </html>
