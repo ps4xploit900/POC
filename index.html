@@ -159,8 +159,12 @@ window.onload = () => {
   const elapsed = Math.floor((now - lastTime) / 1000);
 
   if (lastTime && elapsed > 4) {
-    alert(`⚠️ Last run may have triggered instability or crash.\nElapsed: ${elapsed}s`);
+    let counter = parseInt(localStorage.getItem("crashCount") || "0");
+    counter += 1;
+    localStorage.setItem("crashCount", counter.toString());
     localStorage.removeItem("crashTime");
+
+    alert(`⚠️ Last run may have triggered instability or crash.\n⏱ Elapsed: ${elapsed}s\n💥 Total crashes detected: ${counter}`);
   }
 };
 
