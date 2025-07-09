@@ -157,13 +157,9 @@ window.onload = () => {
   setTimeout(() => {
     if (localStorage.getItem("wasAboutToCrash") === "yes") {
       localStorage.removeItem("wasAboutToCrash");
-
-      let count = parseInt(localStorage.getItem("memoryCorruptionCount") || "0", 10);
-      count++;
-      localStorage.setItem("memoryCorruptionCount", count);
-      alert("✔ Memory corruption detected [" + count + "]");
+      alert("⚠️ Last run may have triggered instability or crash.");
     }
-  }, 10000);
+  }, 9000);
 };
 
 function runPoC() {
