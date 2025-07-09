@@ -177,8 +177,8 @@ window.onload = () => {
     count++;
     localStorage.setItem("memoryCrashCount", count);
 
-    alert("✔ Memory corruption detected\nThis has happened " + count + " time(s).");
-  }
+   }
+  }, 10000); // time 
 };
 
 function resetCrashCount() {
