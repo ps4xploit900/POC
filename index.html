@@ -162,7 +162,7 @@ window.addEventListener("load", () => {
       if (elapsed > 4) {
         let count = parseInt(localStorage.getItem("crashCount") || "0");
         count++;
-        alert(`⚠️ Last run may have triggered instability or crash.\n⏱ Elapsed: ${elapsed}s\n💥 Total crashes detected: ${count}`);
+        alert(`⚠️ Last run may have triggered instability or crash.\nFreeze duration: ${elapsed}s\nTotal crashes detected: ${count}`);
         localStorage.setItem("crashCount", count.toString());
         localStorage.removeItem("crashTime");
       }
